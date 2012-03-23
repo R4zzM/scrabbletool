@@ -49,6 +49,7 @@
 %%      StartType = normal | {takeover, Node} | {failover, Node}
 %%      StartArgs = term()
 %% @end
+%%
 %%--------------------------------------------------------------------
 start(normal, File) ->
 	AbsolutePath = code:priv_dir(scrabble_tool) ++ "/testdict.txt", 
