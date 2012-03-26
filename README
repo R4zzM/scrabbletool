@@ -1,2 +1,6 @@
-Scrabbletool is a practicing tool for scrabble-like games. Currently it's functionality is limited to finding hooks to words given a certain wordlist. For testing purposes a flat (=one word on each row) testing wordlist of about 20 words has been included.  
-Scrabbletool is not intended as a standalone application but rather a sub-component in a larger system, for example toghether with a webserver et.c. Scrabbletool is programmed in Erlang and thus requires an installation it to run. It has currently only been tested with Release 15B. It's in early development. 
+Scrabbletool is a practicing tool for scrabble-like games. 
+Currently it's functionality is limited to finding hooks to words given a certain wordlist. For testing purposes a flat (=one word on each row) testing wordlist of about 20 words has been included.  
+Scrabbletool is not intended as a standalone application but rather a sub-component in a larger system, for example toghether with a webserver et.c. 
+
+Scrabbletool is programmed in Erlang and thus requires an installation it to run. It has currently only been tested with Release 15B. 
+It's in early development. 
