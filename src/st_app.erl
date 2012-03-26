@@ -52,7 +52,7 @@
 %%
 %%--------------------------------------------------------------------
 start(normal, File) ->
-	AbsolutePath = code:priv_dir(scrabble_tool) ++ "/testdict.txt", 
+	AbsolutePath = code:priv_dir(scrabbletool) ++ "/testdict.txt", 
 	{ok, DbRef, WordsProcessed, WordsInDb} = st_database:new(saol_wordlist, AbsolutePath, flat),
 	case st_sup:start_link(DbRef) of
 		{ok, Pid} ->
@@ -82,11 +82,9 @@ stop(State) ->
 %%%===================================================================
 
 lookup_hook(Word) ->
-	st_event_server:lookup_hook(Word),
 	st_worker:st_worker_lookup_hook(Word).
 
 lookup_hook_tree(Word) ->
-	st_event_server:lookup_hook_tree(Word),
 	st_worker:st_worker_lookup_hook_tree(Word).	
 
 count_words() ->
