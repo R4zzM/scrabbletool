@@ -78,7 +78,7 @@ init([DbRef]) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_call(Request, From, State) ->
+handle_call(Request, _From, State) ->
 	case Request of
 		{lookup_hook_request, Word} ->
 			Response = lookup_hook(State#state.db_ref, Word),
@@ -119,7 +119,7 @@ handle_cast(Msg, State) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_info(Info, State) ->
+handle_info(_Info, State) ->
 	{noreply, State}.
 
 %%--------------------------------------------------------------------

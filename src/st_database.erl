@@ -10,20 +10,18 @@
 %%%===================================================================
 
 new(TableName, File, FileFormat) ->
-    Ref = ets:new(TableName, [public]),
-    case st_dict_parser:parse(Ref, File, FileFormat) of
-	{ok, WordsRead, WordsInDb} ->
-	    Res = index_db(Ref, ?CHUNK_SIZE),
-	    case Res of
-		{ok, _} ->
-		    {ok, Ref, WordsRead, WordsInDb};
-		_Other ->
-		    {stop, indexing_error} 
+  Ref = ets:new(TableName, [public]),
+  case st_dict_parser:parse(Ref, File, FileFormat) of
+	  {ok, WordsRead, WordsInDb} ->
+	    case index_db(Ref, ?CHUNK_SIZE) of
+	      {ok, _} ->
+		      {ok, Ref, WordsRead, WordsInDb};
+		    _Other ->
+		      {stop, indexing_error} 
 	    end;    
-	
-	{error, Reason} ->
-	    {error, Reason}
-    end.
+	  Error ->
+	    Error
+  end.
 
 lookup(Ref, Word) ->
     ets:lookup(Ref, Word).
@@ -51,16 +49,13 @@ index_db(EtsRef, ChunkSize) ->
 chunk(EtsRef, ChunkSize) ->
     FirstKey = ets:first(EtsRef),
     chunk(EtsRef, ChunkSize, 1, FirstKey, FirstKey, []).
-
 chunk(_EtsRef, _ChunkSize, _ChunkOffset, '$end_of_table', FromKey, ChunkKeys) ->
     Keys = [{FromKey, '$end_of_table'}, ChunkKeys],
     lists:flatten(lists:reverse(Keys)); % <-- return
-
 chunk(EtsRef, ChunkSize, _ChunkOffset = ChunkSize, PrevKey, FromKey, ChunkKeys) ->
     ToKey = ets:next(EtsRef, PrevKey),
     Keys = [{FromKey, ToKey} | ChunkKeys], 
     chunk(EtsRef, ChunkSize, 0, ToKey, ToKey, Keys);
-
 chunk(EtsRef, ChunkSize, ChunkOffset, PrevKey, FromKey, ChunkKeys) ->
     Key = ets:next(EtsRef, PrevKey),
     chunk(EtsRef, ChunkSize, ChunkOffset + 1, Key, FromKey, ChunkKeys).
@@ -71,18 +66,17 @@ start_indexers(EtsRef, KeyPairs) ->
     wait_for_indexers(IndexerPids, 0, 0).
 
 wait_for_indexers(IndexerPids, Progress, TotalWordsProcessed) ->
-
     receive 
-	{indexer_done, IndexerPid, ProcessedByIndexer} when Progress < length(IndexerPids) - 1 ->
-	    NewProgress = Progress + 1,
-	    NewTotalWordsProcessed = TotalWordsProcessed + ProcessedByIndexer,
-	    wait_for_indexers(IndexerPids, NewProgress, NewTotalWordsProcessed);
-	{indexer_done, IndexerPid, ProcessedByIndexer} ->
-	    {ok, TotalWordsProcessed + ProcessedByIndexer};
-	_Other ->
-	    wait_for_indexers(IndexerPids, Progress, TotalWordsProcessed)
-    after 30000 ->
-	    timeout
+    	{indexer_done, _IndexerPid, ProcessedByIndexer} when Progress < length(IndexerPids) - 1 ->
+    	    NewProgress = Progress + 1,
+    	    NewTotalWordsProcessed = TotalWordsProcessed + ProcessedByIndexer,
+    	    wait_for_indexers(IndexerPids, NewProgress, NewTotalWordsProcessed);
+    	{indexer_done, _IndexerPid, ProcessedByIndexer} ->
+    	    {ok, TotalWordsProcessed + ProcessedByIndexer};
+    	_Other ->
+    	    wait_for_indexers(IndexerPids, Progress, TotalWordsProcessed)
+        after 30000 ->
+    	    timeout
     end.
 	  
 index(Ref, ServerPid, {CurrentWord, ToWord}, WordsProcessed) ->

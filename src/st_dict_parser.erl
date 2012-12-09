@@ -1,41 +1,35 @@
 -module(st_dict_parser).
 
--export([parse/3]).
+-export([parse/2]).
 
 %%%===================================================================
 %%% API
 %%%===================================================================
-parse(Ref, FileName, Format) ->
-	case Format of
-		flat ->
-			case populate_db_from_flat_file(Ref, FileName) of
-				{ok, LinesProcessed} ->
-					{ok, st_database:count_words(Ref), LinesProcessed}; % {Words in db, Words in file} TODO: Fix this. We must return some kind of valid length.
-				{error, Reason} ->
-					{error, Reason}
-			end;
-		_Error ->
-			{error, invalid_format_specifier} 
+parse(EtsRef, FileName) ->
+	case populate_db(EtsRef, FileName) of
+		{ok, LinesProcessed} ->
+			{ok, LinesProcessed}; % {Words in db, Words in file} TODO: Fix this. We must return some kind of valid length.
+    Error ->
+      Error
 	end.
 
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
 
-populate_db_from_flat_file(EtsRef, File) ->
+populate_db(EtsRef, File) ->
 	{ok, FileDescr} = file:open(File, [read, {encoding, utf8}]),
-	populate_db_row_by_row(EtsRef, FileDescr, 0).
+	populate_db(EtsRef, FileDescr, 0).
 
-populate_db_row_by_row(EtsRef, FileDescr, LinesProcessed) ->
+populate_db(EtsRef, FileDescr, LinesProcessed) ->
 	case file:read_line(FileDescr) of 
 		{ok, Line} ->
 			Word = string:strip(Line, right, $\n),
-			WordBinary = unicode:characters_to_binary(Word),
-			true = ets:insert(EtsRef, {WordBinary, []}),
-			populate_db_row_by_row(EtsRef, FileDescr, LinesProcessed + 1);
+			Bin  = unicode:characters_to_binary(Word),
+			true = ets:insert(EtsRef, {Bin, []}),
+			populate_db(EtsRef, FileDescr, LinesProcessed + 1);
 		eof ->
 			{ok, LinesProcessed};
-		{error, Reason} ->
-			{error, Reason}
+		Error ->
+      Error
 	end.
-	

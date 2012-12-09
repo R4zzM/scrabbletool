@@ -51,9 +51,9 @@
 %% @end
 %%
 %%--------------------------------------------------------------------
-start(normal, File) ->
+start(normal, _Args) ->
 	AbsolutePath = code:priv_dir(scrabbletool) ++ "/testdict.txt", 
-	{ok, DbRef, WordsProcessed, WordsInDb} = st_database:new(saol_wordlist, AbsolutePath, flat),
+	{ok, DbRef, _WordsProcessed, _WordsInDb} = st_database:new(saol_wordlist, AbsolutePath),
 	case st_sup:start_link(DbRef) of
 		{ok, Pid} ->
 			{ok, Pid, #state{timestamp_start = now()}};

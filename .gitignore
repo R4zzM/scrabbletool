@@ -1,0 +1,4 @@
+*.beam
+*.eunit
+*.sublime-project
+*.sublime-workspace

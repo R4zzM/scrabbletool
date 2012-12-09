@@ -45,9 +45,9 @@ stop_scrabble_tool() ->
 
 lookup(Word) ->
 	WordUtf8Binary = unicode:characters_to_binary(Word), 
-	scrabble_tool:lookup_hook(WordUtf8Binary).
+	st_app:lookup_hook(WordUtf8Binary).
 
 count_words() ->
-	scrabble_tool:count_words().
+	st_app:count_words().
 	
 
