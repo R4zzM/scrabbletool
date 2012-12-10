@@ -30,19 +30,19 @@
 %% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-start_link(DbRef) ->
-	gen_server:start_link(?MODULE, [DbRef], []).
+start_link(Db) ->
+	gen_server:start_link(?MODULE, [Db], []).
 
 st_worker_lookup_hook(Word) ->
 	{ok, Pid} = supervisor:start_child(st_worker_sup, []),
 	gen_server:call(Pid, {lookup_hook_request, Word}).
 
 st_worker_lookup_hook_tree(Word) ->
-	{ok, Pid} = supervisor:start_child(st_sup, []),
+	{ok, Pid} = supervisor:start_child(st_worker_sup, []),
 	gen_server:call(Pid, {lookup_hook_tree_request, Word}).
 
 st_worker_count_words() ->
-	{ok, Pid} = supervisor:start_child(st_sup, []),
+	{ok, Pid} = supervisor:start_child(st_worker_sup, []),
 	gen_server:call(Pid, {count_words_request}).
 
 %%%===================================================================
@@ -60,8 +60,8 @@ st_worker_count_words() ->
 %%                     {stop, Reason}
 %% @end
 %%--------------------------------------------------------------------
-init([DbRef]) ->
-	{ok, #state{db_ref = DbRef}}.
+init([Db]) ->
+	{ok, #state{db_ref = Db}}.
 
 
 %%--------------------------------------------------------------------
@@ -151,18 +151,18 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%%===================================================================
 
-lookup_hook(DbRef, Word) ->
-	st_database:lookup(DbRef, Word).
+lookup_hook(Db, Word) ->
+	st_database:lookup(Db, Word).
 
-lookup_hook_tree(DbRef, Word) ->
-	case st_database:lookup(DbRef, Word) of
+lookup_hook_tree(Db, Word) ->
+	case st_database:lookup(Db, Word) of
 		[] ->
 			[];
 		[{Word, []}] ->
 			{Word, []};
 		[{Word, Children}] ->
-			{Word, lists:map(fun(Elem) -> lookup_hook_tree(DbRef, Elem) end, Children)}
+			{Word, lists:map(fun(Elem) -> lookup_hook_tree(Db, Elem) end, Children)}
 	end.
 
-count_words(DbRef) ->
-	st_database:count_words(DbRef).
+count_words(Db) ->
+	st_database:count_words(Db).

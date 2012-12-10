@@ -29,8 +29,8 @@
 %% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-start_link(DbRef) ->
-    supervisor:start_link({local, ?SERVER}, ?MODULE, [DbRef]).
+start_link(Db) ->
+    supervisor:start_link({local, ?SERVER}, ?MODULE, [Db]).
 
 %%%===================================================================
 %%% Supervisor callbacks
@@ -49,15 +49,15 @@ start_link(DbRef) ->
 %%                     {error, Reason}
 %% @end
 %%--------------------------------------------------------------------
-init([DbRef]) ->
+init([Db]) ->
     RestartStrategy = simple_one_for_one,
     MaxRestarts = 4,
     MaxSecondsBetweenRestarts = 3600,
 
     SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
 
-    Worker = {st_worker, {st_worker, start_link, [DbRef]},
-	      temporary, 2000, worker, [st_worker]},
+    Worker = {st_worker, {st_worker, start_link, [Db]},
+	            temporary, 2000, worker, [st_worker]},
 
     {ok, {SupFlags, [Worker]}}.
 

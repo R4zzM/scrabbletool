@@ -34,8 +34,8 @@
 %% External functions
 %% ====================================================================
 
-start_link(DbRef) ->
-	supervisor:start_link({local, ?SERVER}, ?MODULE, [DbRef]).
+start_link(Db) ->
+	supervisor:start_link({local, ?SERVER}, ?MODULE, [Db]).
 
 %% ====================================================================
 %% Server functions
@@ -46,22 +46,17 @@ start_link(DbRef) ->
 %%          ignore                          |
 %%          {error, Reason}
 %% --------------------------------------------------------------------
-init([DbRef]) ->
-    RestartStrategy = one_for_one,
-    MaxRestarts = 4,
+init([Db]) ->
+    RestartStrategy           = one_for_one,
+    MaxRestarts               = 4,
     MaxSecondsBetweenRestarts = 3600,
 
     SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
 
-    WorkerSupervisor = {st_worker_sup, {st_worker_sup, start_link, [DbRef]},
-	      permanent, 2000, supervisor, [st_worker_sup]},
-	
-	EventManager = {st_event_server, {st_event_server, start_link, []},
-	      permanent, 2000, worker, [st_event_server]},
-	
-	Children = [WorkerSupervisor, EventManager],
+    WorkerSupervisor = {st_worker_sup, {st_worker_sup, start_link, [Db]},
+	                      permanent, 2000, supervisor, [st_worker_sup]},
 
-    {ok, {SupFlags, Children}}.
+    {ok, {SupFlags, [WorkerSupervisor]}}.
 
 %% ====================================================================
 %% Internal functions

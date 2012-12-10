@@ -1,6 +1,6 @@
 -module(st_database).
 
--export([new/3, lookup/2, count_words/1]).
+-export([new/2, lookup/2, count_words/1]).
 
 -define(CHUNK_SIZE, 500).
 
@@ -9,13 +9,13 @@
 %%% API
 %%%===================================================================
 
-new(TableName, File, FileFormat) ->
-  Ref = ets:new(TableName, [public]),
-  case st_dict_parser:parse(Ref, File, FileFormat) of
-	  {ok, WordsRead, WordsInDb} ->
-	    case index_db(Ref, ?CHUNK_SIZE) of
+new(TableName, File) ->
+  Db = ets:new(TableName, [public]),
+  case st_dict_parser:parse(Db, File) of
+	  {ok, LinesProcessed} ->
+	    case index_db(Db, ?CHUNK_SIZE) of
 	      {ok, _} ->
-		      {ok, Ref, WordsRead, WordsInDb};
+		      {ok, Db, LinesProcessed};
 		    _Other ->
 		      {stop, indexing_error} 
 	    end;    
@@ -23,23 +23,22 @@ new(TableName, File, FileFormat) ->
 	    Error
   end.
 
-lookup(Ref, Word) ->
-    ets:lookup(Ref, Word).
+lookup(Db, Word) ->
+    ets:lookup(Db, Word).
 
-count_words(Ref) ->
-    FirstKey = ets:first(Ref),
-    count_words(Ref, FirstKey, 0).
-
-count_words(_EtsRef, '$end_of_table', CurrentCount) ->
-    CurrentCount;
-
-count_words(EtsRef, Key, CurrentCount) ->
-    NextKey = ets:next(EtsRef, Key),
-    count_words(EtsRef, NextKey, CurrentCount + 1).
+count_words(Db) ->
+    FirstKey = ets:first(Db),
+    count_words(Db, FirstKey, 0).
 
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+
+count_words(_EtsRef, '$end_of_table', CurrentCount) ->
+    CurrentCount;
+count_words(EtsRef, Key, CurrentCount) ->
+    NextKey = ets:next(EtsRef, Key),
+    count_words(EtsRef, NextKey, CurrentCount + 1).
 
 index_db(EtsRef, ChunkSize) ->
     KeyPairs = chunk(EtsRef, ChunkSize), 

@@ -2,11 +2,11 @@
 
 -export([parse/2]).
 
-%%%===================================================================
+	%%%===================================================================
 %%% API
 %%%===================================================================
-parse(EtsRef, FileName) ->
-	case populate_db(EtsRef, FileName) of
+parse(Db, FileName) ->
+	case populate_db(Db, FileName) of
 		{ok, LinesProcessed} ->
 			{ok, LinesProcessed}; % {Words in db, Words in file} TODO: Fix this. We must return some kind of valid length.
     Error ->
@@ -17,17 +17,17 @@ parse(EtsRef, FileName) ->
 %%% Internal functions
 %%%===================================================================
 
-populate_db(EtsRef, File) ->
+populate_db(Db, File) ->
 	{ok, FileDescr} = file:open(File, [read, {encoding, utf8}]),
-	populate_db(EtsRef, FileDescr, 0).
+	populate_db(Db, FileDescr, 0).
 
-populate_db(EtsRef, FileDescr, LinesProcessed) ->
+populate_db(Db, FileDescr, LinesProcessed) ->
 	case file:read_line(FileDescr) of 
 		{ok, Line} ->
 			Word = string:strip(Line, right, $\n),
 			Bin  = unicode:characters_to_binary(Word),
-			true = ets:insert(EtsRef, {Bin, []}),
-			populate_db(EtsRef, FileDescr, LinesProcessed + 1);
+			true = ets:insert(Db, {Bin, []}),
+			populate_db(Db, FileDescr, LinesProcessed + 1);
 		eof ->
 			{ok, LinesProcessed};
 		Error ->
