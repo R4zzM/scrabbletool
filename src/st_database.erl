@@ -44,7 +44,9 @@ index_db(EtsRef, ChunkSize) ->
     KeyPairs = chunk(EtsRef, ChunkSize), 
     start_indexers(EtsRef, KeyPairs).
 
-% Returns a list containing the pairs of keys {From, To} that can be used to iterate through the database. The number of keys between From and To is ChunkSize.
+% Returns a list containing the pairs of keys {From, To} that can be used to 
+% iterate through the database. 
+% The number of keys between From and To is ChunkSize.
 chunk(EtsRef, ChunkSize) ->
     FirstKey = ets:first(EtsRef),
     chunk(EtsRef, ChunkSize, 1, FirstKey, FirstKey, []).

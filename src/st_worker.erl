@@ -155,13 +155,18 @@ lookup_hook(Db, Word) ->
 	st_database:lookup(Db, Word).
 
 lookup_hook_tree(Db, Word) ->
+	MochijsonObj = do_deep_lookup(Db, Word),
+	st_mochijson2:encode(MochijsonObj).
+
+do_deep_lookup(Db, Word) -> 
 	case st_database:lookup(Db, Word) of
 		[] ->
-			[];
+			{struct, [{Word, <<"null">>}]}; % Word doesn't exist in dict
 		[{Word, []}] ->
-			{Word, []};
+			{struct, [{Word, []}]}; % Word is a leaf
 		[{Word, Children}] ->
-			{Word, lists:map(fun(Elem) -> lookup_hook_tree(Db, Elem) end, Children)}
+			{struct, [{Word, lists:map(fun(Elem) -> 
+				                 do_deep_lookup(Db, Elem) end, Children)}]}
 	end.
 
 count_words(Db) ->

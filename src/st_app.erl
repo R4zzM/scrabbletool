@@ -52,14 +52,27 @@
 %%
 %%--------------------------------------------------------------------
 start(normal, _Args) ->
-	% AbsolutePath = code:priv_dir(scrabbletool) ++ "/testdict.txt", 
-	AbsolutePath = "priv/testdict.txt",
-	 
+
+	% Start cowboy
+	Port     = 8080,
+	PoolSize = 100,
+	Dispatch = [
+		{'_', [
+			{[], st_cowboy_handler, []}
+		]}
+	],
+	{ok, _} = cowboy:start_http(http, PoolSize, [{port, Port}], [
+		{dispatch, Dispatch}
+	]),
+
+	% Start scrabbletool
+	AbsolutePath = "priv/testdict.txt", 
 	{ok, Db, _WordsProcessed} = st_database:new(saol_wordlist, AbsolutePath),
 	case st_sup:start_link(Db) of
-		{ok, Pid} ->
+		{ok, Pid} ->	
 			{ok, Pid, #state{timestamp_start = now()}};
 		Error ->
+			ok = cowboy:stop_listener(http),
 			Error
 	end.
 
