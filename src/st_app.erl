@@ -53,7 +53,7 @@
 %%--------------------------------------------------------------------
 start(normal, _Args) ->
 	% AbsolutePath = code:priv_dir(scrabbletool) ++ "/testdict.txt", 
-	AbsolutePath = "../priv/testdict.txt",
+	AbsolutePath = "priv/testdict.txt",
 	 
 	{ok, Db, _WordsProcessed} = st_database:new(saol_wordlist, AbsolutePath),
 	case st_sup:start_link(Db) of
